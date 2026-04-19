@@ -1,53 +1,41 @@
-# Dependencies
-node_modules/
-/.pnp
-.pnp.js
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Next.js build output
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
 /.next/
 /out/
 
-# Production build
+# production
 /build
 
-# Environment variables — NEVER commit these
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env*.local
+# misc
+.DS_Store
+*.pem
 
-# Vercel
-.vercel
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
-
-# Debug logs
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
 
-# macOS system files
-.DS_Store
-.AppleDouble
-.LSOverride
-._*
-.Spotlight-V100
-.Trashes
+# env files (can opt-in for committing if needed)
+.env*
 
-# Editor directories
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# vercel
+.vercel
 
-# Testing
-/coverage
-
-# Misc
-*.pem
-.cache/
+# typescript
+*.tsbuildinfo
+next-env.d.ts
