@@ -1,1 +1,3 @@
 @AGENTS.md
+@WEEK_1_GUIDE.md
+@WEEK_2_GUIDE.md

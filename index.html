@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgentForge — Build AI Agents Without Code</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0f;
+      color: #e8e8f0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background gradient orbs */
+    .bg-orbs {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.15;
+    }
+    .orb-1 { width: 600px; height: 600px; background: #7c3aed; top: -200px; left: -200px; }
+    .orb-2 { width: 500px; height: 500px; background: #2563eb; top: 50%; right: -150px; }
+    .orb-3 { width: 400px; height: 400px; background: #7c3aed; bottom: -100px; left: 40%; }
+
+    /* Nav */
+    nav {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 48px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #fff;
+    }
+    .logo span { color: #818cf8; }
+    .nav-badge {
+      font-size: 11px;
+      background: rgba(129,140,248,0.15);
+      color: #818cf8;
+      border: 1px solid rgba(129,140,248,0.3);
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* Hero */
+    .hero {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 100px 48px 80px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #818cf8;
+      background: rgba(129,140,248,0.1);
+      border: 1px solid rgba(129,140,248,0.25);
+      padding: 6px 14px;
+      border-radius: 20px;
+      margin-bottom: 32px;
+      letter-spacing: 0.3px;
+    }
+    .hero-label .dot {
+      width: 6px; height: 6px;
+      background: #818cf8;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    h1 {
+      font-size: clamp(42px, 6vw, 72px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -2px;
+      color: #fff;
+      margin-bottom: 24px;
+    }
+    h1 .gradient {
+      background: linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #60a5fa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 20px;
+      color: #94a3b8;
+      line-height: 1.6;
+      max-width: 600px;
+      margin: 0 auto 48px;
+    }
+
+    .cta-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      color: #fff;
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 30px rgba(124,58,237,0.4);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(124,58,237,0.6); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      color: #e8e8f0;
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+    /* Stats bar */
+    .stats-bar {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      padding: 40px 48px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-number {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+    .stat-label { font-size: 13px; color: #64748b; margin-top: 4px; }
+
+    /* Features */
+    .features {
+      position: relative;
+      z-index: 10;
+      padding: 80px 48px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .section-label {
+      text-align: center;
+      font-size: 13px;
+      color: #818cf8;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      text-align: center;
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -1px;
+      margin-bottom: 64px;
+    }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+    .feature-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 32px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .feature-card:hover { border-color: rgba(129,140,248,0.3); transform: translateY(-4px); }
+    .feature-icon {
+      width: 48px; height: 48px;
+      background: rgba(129,140,248,0.12);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+    .feature-title { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 10px; }
+    .feature-desc { font-size: 14px; color: #64748b; line-height: 1.6; }
+
+    /* Stack section */
+    .stack {
+      position: relative;
+      z-index: 10;
+      padding: 60px 48px 80px;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .stack-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 32px;
+    }
+    .chip {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #cbd5e1;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .chip.highlight {
+      background: rgba(129,140,248,0.12);
+      border-color: rgba(129,140,248,0.3);
+      color: #a5b4fc;
+    }
+
+    /* Footer */
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 40px 48px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      color: #475569;
+      font-size: 13px;
+    }
+    footer a { color: #818cf8; text-decoration: none; }
+    .week-badge {
+      display: inline-block;
+      background: rgba(34,197,94,0.12);
+      color: #4ade80;
+      border: 1px solid rgba(34,197,94,0.25);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <nav>
+    <div class="logo">Agent<span>Forge</span></div>
+    <div class="nav-badge">Week 1 · In Progress</div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-label">
+      <span class="dot"></span>
+      Building in public · Open Source
+    </div>
+    <h1>
+      Build AI Agents<br/>
+      <span class="gradient">Without Writing Code</span>
+    </h1>
+    <p class="hero-sub">
+      AgentForge is a visual builder for AI agents — drag, configure, deploy.
+      Think Figma, but for the people who want AI to work for them.
+    </p>
+    <div class="cta-group">
+      <a href="https://github.com" class="btn-primary">
+        ⭐ Star on GitHub
+      </a>
+      <a href="#features" class="btn-secondary">
+        See what's coming →
+      </a>
+    </div>
+  </section>
+
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-number">12</div>
+      <div class="stat-label">Weeks to launch</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">0→1</div>
+      <div class="stat-label">Building in public</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">Free</div>
+      <div class="stat-label">Open source forever</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">Claude</div>
+      <div class="stat-label">Powered by Anthropic</div>
+    </div>
+  </div>
+
+  <section class="features" id="features">
+    <div class="section-label">What's Coming</div>
+    <h2 class="section-title">Everything you need to run AI agents</h2>
+    <div class="feature-grid">
+
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <div class="feature-title">Visual Agent Builder</div>
+        <div class="feature-desc">
+          Design your AI agent step-by-step with a drag-and-drop canvas. Set personality, tools, memory, and behavior — no terminal required.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🔧</div>
+        <div class="feature-title">Tool Integrations</div>
+        <div class="feature-desc">
+          Give your agents superpowers: web search, calculators, calendar access, file readers. One click to add, one click to remove.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🔗</div>
+        <div class="feature-title">Shareable Agent Links</div>
+        <div class="feature-desc">
+          Every agent gets a public URL. Share with your team, embed on your website, or let anyone clone your agent as a template.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <div class="feature-title">Built-in Auth & Security</div>
+        <div class="feature-desc">
+          Supabase-powered auth with Row Level Security means your agents and data stay private by default, shared only when you choose.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">💳</div>
+        <div class="feature-title">Freemium Model</div>
+        <div class="feature-desc">
+          Start free with 3 agents. Upgrade to Pro ($12/month) for unlimited agents, longer conversations, and priority support.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🚀</div>
+        <div class="feature-title">One-Click Deploy</div>
+        <div class="feature-desc">
+          Hosted on Vercel globally. Your agents are live on a custom domain, fast everywhere, and scale automatically.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="stack">
+    <div class="section-label">Tech Stack</div>
+    <h2 class="section-title">Powered by tools you can trust</h2>
+    <div class="stack-chips">
+      <span class="chip highlight">Next.js 14</span>
+      <span class="chip highlight">TypeScript</span>
+      <span class="chip highlight">Claude API</span>
+      <span class="chip highlight">Supabase</span>
+      <span class="chip">Tailwind CSS</span>
+      <span class="chip">shadcn/ui</span>
+      <span class="chip">Stripe</span>
+      <span class="chip">Vercel</span>
+      <span class="chip">GitHub</span>
+    </div>
+  </section>
+
+  <footer>
+    <div class="week-badge">✅ Week 1 Complete</div>
+    <p>
+      AgentForge · Built by <a href="mailto:liyanage.lakii@gmail.com">Lakii</a> ·
+      Open source on <a href="https://github.com">GitHub</a>
+    </p>
+    <p style="margin-top: 8px; font-size: 12px; color: #334155;">
+      12-week build-in-public journey · Powered by Claude + Claude Code
+    </p>
+  </footer>
+
+</body>
+</html>
