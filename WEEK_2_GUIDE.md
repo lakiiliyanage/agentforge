@@ -229,6 +229,107 @@ Open it now and skim **Sections 1–4**. Don't study it deeply — just scan the
 
 ---
 
+## 📁 Next.js File Types — Quick Reference
+
+Before you build the To-Do app, it's worth knowing what each special filename means in a Next.js project. These files aren't named randomly — Next.js reads the filename and gives it a specific job automatically.
+
+> **Design analogy:** Think of your project like a Figma file. A `page.tsx` is like a Frame — it's the thing users actually see. A `layout.tsx` is like a master component wrapped around every frame. A `loading.tsx` is the skeleton placeholder that shows while a frame is rendering.
+
+### The 7 Special Files
+
+| File | What it does | Where you'll use it |
+|------|-------------|---------------------|
+| `page.tsx` | **The actual page** — defines what renders at that URL. Without this file, the route doesn't exist. | Every screen: `/todo/page.tsx`, `/dashboard/page.tsx` |
+| `layout.tsx` | **Persistent wrapper** around pages — renders once and stays as you navigate. Great for Navbar + Footer. | `src/app/layout.tsx` wraps your whole app |
+| `loading.tsx` | **Loading skeleton** — shown automatically while the page fetches data. Uses React Suspense under the hood. | Any page that loads from a database |
+| `error.tsx` | **Error boundary** — shown if a page crashes. Catches errors so one broken page doesn't kill the whole app. | Week 11 — custom error page |
+| `not-found.tsx` | **404 page** — shown when a URL doesn't match any route. | Week 11 — custom not-found page |
+| `route.ts` | **API endpoint** — server-side code with no UI. Returns JSON. This is how your app talks to Supabase and Claude API. | `/api/chat/route.ts`, `/api/stripe/webhook/route.ts` |
+| `middleware.ts` | **Request interceptor** — runs before any page loads. Used for auth redirects: "is this user logged in? If not, send them to /login." | Week 4 — protecting the dashboard |
+
+### How Folders Become URLs
+
+In Next.js App Router, **folder name = URL path**. No configuration needed.
+
+```
+src/app/
+├── page.tsx              → localhost:3000/
+├── todo/
+│   └── page.tsx          → localhost:3000/todo
+├── dashboard/
+│   └── page.tsx          → localhost:3000/dashboard
+├── agents/
+│   ├── page.tsx          → localhost:3000/agents
+│   └── [id]/
+│       └── page.tsx      → localhost:3000/agents/abc123  ← [id] is a variable
+└── api/
+    └── chat/
+        └── route.ts      → localhost:3000/api/chat  ← not a page, an API
+```
+
+> **The `[id]` folder** — square brackets mean "this can be anything." `agents/[id]/page.tsx` matches `/agents/abc123`, `/agents/my-finance-bot`, `/agents/anything`. You'll use this in Week 5 to build the individual agent page.
+
+### page.tsx in Detail
+
+Every `page.tsx` is a React component. It's the minimum needed to create a route:
+
+```tsx
+// src/app/todo/page.tsx
+
+export default function TodoPage() {
+  return (
+    <main>
+      <h1>My To-Do List</h1>
+    </main>
+  )
+}
+```
+
+Three things to notice:
+1. **`export default`** — Next.js requires this. It's how the framework finds and renders your component.
+2. **The function name** doesn't matter to Next.js (`TodoPage`, `Page`, `MyThing` all work) but naming it clearly helps you read the code.
+3. **No routing config** — just create the folder and file, and the route exists.
+
+### layout.tsx in Detail
+
+Layout wraps every page inside its folder. `src/app/layout.tsx` wraps the whole app:
+
+```tsx
+// src/app/layout.tsx
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>
+        <Navbar />          {/* appears on every page */}
+        {children}          {/* this is where each page.tsx renders */}
+        <Footer />          {/* appears on every page */}
+      </body>
+    </html>
+  )
+}
+```
+
+> `{children}` is a React prop that means "whatever is nested inside me." When you visit `/todo`, Next.js puts `todo/page.tsx` into `{children}` inside `layout.tsx`. You get Navbar + TodoPage + Footer without any wiring.
+
+### route.ts in Detail
+
+A `route.ts` has no UI — it's a pure server function that responds to HTTP requests. You'll create these for every action that talks to Supabase or Claude:
+
+```typescript
+// src/app/api/chat/route.ts
+
+export async function POST(request: Request) {
+  const { message } = await request.json()
+  // call Claude API here...
+  return Response.json({ reply: "Hello from Claude" })
+}
+```
+
+> **Why not just call Supabase/Claude from the page directly?** Security. API keys must never run in the browser — a user could open DevTools and steal them. `route.ts` runs on the server. Your API key stays secret. Your page calls `/api/chat`, which calls Claude. This is the pattern you'll use in Week 6.
+
+---
+
 ## SATURDAY — Hours 3–4 (5pm–7pm): Build the To-Do App
 
 This is the most important exercise of Week 2. You're not just watching Claude build something — you'll read every line it writes and ask about anything you don't understand.
@@ -386,7 +487,7 @@ a designer seeing React for the first time.
 
 ### Step 12: Study Each Component
 
-Open each file in VS Code:
+Open each file in VS Code. Run these in Terminal (not inside Claude Code — exit first with `Esc` or `/exit`):
 
 ```bash
 code src/components/practice/AgentCard.tsx
@@ -394,17 +495,72 @@ code src/components/practice/MessageCounter.tsx
 code src/components/practice/AgentList.tsx
 ```
 
-For each file, identify:
-- Where does the data come in? (props at the top)
-- Where does change happen? (useState)
-- What gets rendered? (the return statement with JSX)
+For each file, find the answers to these three questions:
 
-Ask Claude Code about anything unclear:
+**1. Where does the data come in? (props)**
+Look at the top of the file before the component function. You'll see an `interface` block — that's TypeScript declaring what data this component expects. Below it, the function signature unpacks those values:
+
+```tsx
+interface AgentCardProps {
+  name: string
+  description: string
+  toolCount: number
+}
+
+function AgentCard({ name, description, toolCount }: AgentCardProps) {
+```
+
+Props are read-only — the component receives them but cannot change them. Like receiving a client brief — you work with it, you don't rewrite it.
+
+**2. Where does change happen? (useState)**
+Look for `useState` inside the component function:
+
+```tsx
+const [count, setCount] = useState(0)
+```
+
+This creates two things: `count` (the current value) and `setCount` (the function that updates it). Whenever `setCount` is called, React re-renders with the new value. You won't see useState in AgentCard — it only displays data. You will see it in MessageCounter, because clicking a button changes a number.
+
+**3. What gets rendered? (the return statement)**
+Scroll to the bottom of the component and find `return (`. Everything inside is what appears on screen:
+
+```tsx
+return (
+  <div className="bg-gray-900 rounded-lg p-4">
+    <h2>{name}</h2>
+    <p>{description}</p>
+    <span>{toolCount} tools</span>
+  </div>
+)
+```
+
+The `{curly braces}` are where live data gets inserted — React replaces them with whatever value the variable holds. Think of the return statement as the artboard in Figma: it's the final output the user actually sees.
+
+**What is JSX?**
+The HTML-looking code inside JavaScript files is called JSX. Three things make it different from regular HTML:
+
+```tsx
+// 1. className instead of class (class is a reserved JS word)
+<div className="bg-gray-900">
+
+// 2. Curly braces {} insert JavaScript values
+<h2>{name}</h2>              // inserts a variable
+<span>{toolCount} tools</span>  // "3 tools", "7 tools" etc.
+<p>{isPublic ? "Public" : "Private"}</p>  // conditional
+
+// 3. Every element must be self-closed if empty
+<input />   // not <input>
+```
+
+Design analogy: JSX is like a Figma component that has both the visual structure (layers) and the logic (interactions) in one place.
+
+Ask Claude Code about anything still unclear:
 
 ```
 > In AgentCard, what does "interface" mean before the props definition?
 > In MessageCounter, why does clicking the button cause the number to update?
 > In AgentList, what does .map() do — why is it used for rendering lists?
+> What is the "e" in onClick={(e) => ...}?
 ```
 
 ---
@@ -427,18 +583,69 @@ Open **http://localhost:3000/practice** — you should see all three components 
 
 Make one change to each — without Claude Code:
 
-1. **AgentCard** — add a fourth prop: `isPublic: boolean`. Display "Public" or "Private" based on it
-2. **MessageCounter** — change the starting number from 0 to 10, and change the button label
-3. **AgentList** — add a fourth agent name to the hardcoded array
+**1. AgentCard — add an `isPublic` prop**
 
-Then ask Claude Code to review your changes:
+In `AgentCard.tsx`, add `isPublic: boolean` to the interface and destructure it in the function:
+
+```tsx
+interface AgentCardProps {
+  name: string
+  description: string
+  toolCount: number
+  isPublic: boolean   // add this
+}
+
+function AgentCard({ name, description, toolCount, isPublic }: AgentCardProps) {
+```
+
+Then display it in the JSX:
+
+```tsx
+<span>{isPublic ? "Public" : "Private"}</span>
+```
+
+> ⚠️ **TypeScript will now complain everywhere AgentCard is used without `isPublic` being passed.** Open `src/app/practice/page.tsx` and add `isPublic={true}` (or `false`) to every `<AgentCard />` instance there too. TypeScript enforces required props at every usage — like making a field mandatory in a Figma component, every instance must have it filled in.
+>
+> If you want it optional so you don't have to pass it every time, add a `?` in the interface and a default value:
+> ```tsx
+> isPublic?: boolean  // optional
+> function AgentCard({ ..., isPublic = false }: AgentCardProps)
+> ```
+
+**2. MessageCounter — change starting number and button label**
+
+In `MessageCounter.tsx`, change `useState(0)` to `useState(10)`:
+
+```tsx
+const [count, setCount] = useState(10)
+```
+
+The number inside `useState()` is the initial value — that's all it takes. Then find the `<button>` tag and change the label text:
+
+```tsx
+<button onClick={() => setCount(count + 1)}>
+  Add Message     {/* change this text */}
+</button>
+```
+
+Only change the visible text — leave `onClick` exactly as it is.
+
+**3. AgentList — add a fourth agent name**
+
+Find the hardcoded array inside the component and add a fourth item:
+
+```tsx
+const agents = ["Finance Advisor", "Research Bot", "Daily Briefer", "Your New Agent"]
+```
+
+Then ask Claude Code to review all three changes:
 
 ```
 > I modified the three practice components. Here's what I changed:
   [describe each change]. Did I do it correctly?
 ```
 
-> **Why this matters:** The AgentCard is literally your Week 5 dashboard card. MessageCounter is exactly how message limits will work. AgentList is your Week 5 agent list. You're previewing real features.
+> **Why this matters:** AgentCard = your Week 5 dashboard card. MessageCounter = how message limits will work. AgentList = your Week 5 agent list. You're previewing real features.
 
 ---
 
