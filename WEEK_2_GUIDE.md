@@ -783,6 +783,507 @@ git push
 
 ---
 
+## 📖 Concept Glossary — Full Explanations
+
+Use this section when filling in your Week 2 Review. For each concept, read the explanation, then ask yourself: "could I explain this to a friend in one sentence?" If yes — it's solid. If no — it's fuzzy.
+
+---
+
+### JavaScript Concepts
+
+#### `const` vs `let` — When to use each
+
+Both create variables, but they have different rules about changing.
+
+```javascript
+const agentName = "Finance Advisor"   // locked — cannot be reassigned
+let messageCount = 0                  // flexible — can be changed later
+messageCount = messageCount + 1       // ✅ works fine
+agentName = "Research Bot"            // ❌ TypeScript error — const can't change
+```
+
+**Rule of thumb:** Start with `const` for everything. Only switch to `let` when you know the value needs to change over time (counters, flags, things that update). In practice, most things in AgentForge will be `const` — agent names, API responses, component props.
+
+**Why it matters:** Using `const` by default prevents accidental overwrites. If you use `let` everywhere and overwrite something by mistake, the code runs silently with the wrong data. `const` catches it immediately.
+
+---
+
+#### Functions — Reusable blocks of instructions
+
+A function is a named set of instructions you can run as many times as you want by calling its name.
+
+```javascript
+// Define the function once
+function formatAgentName(name) {
+  return name.trim().toUpperCase()
+}
+
+// Call it anywhere, as many times as needed
+formatAgentName("finance advisor")   // → "FINANCE ADVISOR"
+formatAgentName("  research bot  ")  // → "RESEARCH BOT"
+```
+
+Three parts to every function:
+1. **Name** — what you call it (`formatAgentName`)
+2. **Parameters** — inputs it receives in brackets (`name`)
+3. **Return** — the output it hands back (`return name.trim()...`)
+
+**Design analogy:** A Figma component. You define it once, then reuse it everywhere. Each time you use it, you can pass different values (like overriding a component's text layer).
+
+---
+
+#### Arrow Functions — Shorter syntax, same idea
+
+Arrow functions do the same thing as regular functions — just written more compactly. You'll see them constantly in React.
+
+```javascript
+// Regular function
+function double(n) {
+  return n * 2
+}
+
+// Arrow function — identical result
+const double = (n) => n * 2
+
+// Arrow function with a body (for multi-line logic)
+const double = (n) => {
+  const result = n * 2
+  return result
+}
+```
+
+**When you'll see them in AgentForge:**
+
+```javascript
+// In .map() — transform every agent in a list
+agents.map((agent) => agent.name.toUpperCase())
+
+// In onClick handlers — run code when a button is clicked
+<button onClick={() => setCount(count + 1)}>Add</button>
+
+// In .filter() — keep only matching items
+agents.filter((agent) => agent.isPublic === true)
+```
+
+You don't need to choose between them — Claude Code will use both. Just know they're the same thing.
+
+---
+
+#### Objects — Grouped, named data
+
+An object is a bundle of related data stored under one name. Each piece of data has a key (the name) and a value (the data).
+
+```javascript
+const agent = {
+  name: "Finance Advisor",        // key: name, value: string
+  messageCount: 47,               // key: messageCount, value: number
+  isPublic: true,                 // key: isPublic, value: boolean
+  tools: ["calculator", "search"] // key: tools, value: array
+}
+
+// Access values with dot notation
+agent.name          // "Finance Advisor"
+agent.tools[0]      // "calculator"
+agent.isPublic      // true
+```
+
+**In AgentForge, objects are everywhere:**
+- Every agent is an object (name, description, config, tools)
+- Every user is an object (id, email, tier, created_at)
+- Every API response from Claude is an object (message, tokens, model)
+
+**Design analogy:** The properties panel in Figma. Every component has named properties — fill, stroke, padding, opacity. An object is the same idea in code: one thing, many named properties.
+
+---
+
+#### Arrays — Ordered lists
+
+An array holds multiple items in a specific order. Items are accessed by their position (index), starting at 0.
+
+```javascript
+const agents = ["Finance Advisor", "Research Bot", "Daily Briefer"]
+
+agents[0]       // "Finance Advisor" — index 0 is always first
+agents[1]       // "Research Bot"
+agents.length   // 3 — how many items
+
+agents.push("New Agent")   // add to end
+agents.pop()               // remove last item
+```
+
+**The four array methods you'll use constantly:**
+
+```javascript
+// .map() — transform every item, return a new array
+agents.map(agent => agent.toUpperCase())
+// → ["FINANCE ADVISOR", "RESEARCH BOT", "DAILY BRIEFER"]
+
+// .filter() — keep only items that pass a test
+agents.filter(agent => agent.includes("Bot"))
+// → ["Research Bot"]
+
+// .some() — does at least one item match? Returns true/false
+agents.some(agent => agent === "Research Bot")
+// → true
+
+// .find() — return the first item that matches
+agents.find(agent => agent.startsWith("Finance"))
+// → "Finance Advisor"
+```
+
+**In AgentForge:** Your dashboard will fetch an array of agents from Supabase, then `.map()` over them to render an `<AgentCard />` for each one. The delete function uses `.filter()` to return a new array with one item removed. The duplicate-check uses `.some()` to test if a name already exists.
+
+---
+
+#### `async` / `await` — Waiting for slow things
+
+JavaScript runs code top to bottom, instantly. But some things take time — fetching from a database, calling Claude's API, uploading a file. `async`/`await` tells JavaScript to wait for those things before moving on.
+
+```javascript
+// Without async/await — broken
+function loadAgents() {
+  const agents = fetch("/api/agents")  // starts fetching, doesn't wait
+  console.log(agents)                  // logs "Promise {pending}" — not the data
+}
+
+// With async/await — correct
+async function loadAgents() {
+  const response = await fetch("/api/agents")  // waits for the response
+  const agents = await response.json()         // waits for the JSON to parse
+  console.log(agents)                          // logs the actual array of agents
+}
+```
+
+**Rules:**
+- `async` goes before the function keyword — marks it as one that can wait
+- `await` goes before anything slow — can only be used inside an `async` function
+- Every time you call Claude API, read from Supabase, or fetch data, you'll use `await`
+
+**Design analogy:** Waiting for a plugin to finish processing before the design updates. Without `await`, it's like trying to use a Figma plugin result before the plugin has finished running.
+
+---
+
+#### `return` — Ending a function and sending data back
+
+`return` does two things at once: it exits the function immediately, and it sends a value back to wherever the function was called from.
+
+```javascript
+function checkLimit(messageCount) {
+  if (messageCount >= 100) {
+    return "limit reached"    // exits here if over limit
+  }
+  if (messageCount < 0) {
+    return "invalid"          // exits here if invalid
+  }
+  return "ok"                 // exits here normally
+}
+```
+
+**`return` as a guard (you saw this in the duplicate task check):**
+
+```javascript
+function addTask(newTask) {
+  const isDuplicate = tasks.some(t => t.text === newTask)
+  if (isDuplicate) {
+    setError("Task already exists")
+    return    // ← exits the function here, nothing below runs
+  }
+  // only reaches here if not a duplicate
+  setTasks([...tasks, { text: newTask, completed: false }])
+}
+```
+
+Using `return` early to stop a function is called a **guard clause** — you check for a problem first, bail out if found, then run the main logic safely. You'll use this pattern everywhere in AgentForge.
+
+---
+
+### TypeScript Concepts
+
+#### Interfaces — Declaring the shape of data
+
+An interface is TypeScript's way of saying "this object must have exactly these properties, with these types." It's not code that runs — it's a contract that TypeScript checks for you.
+
+```typescript
+interface Agent {
+  id: string
+  name: string
+  description: string
+  toolCount: number
+  isPublic: boolean
+  createdAt: Date
+}
+```
+
+Once you define an interface, TypeScript checks every object against it:
+
+```typescript
+const myAgent: Agent = {
+  id: "abc123",
+  name: "Finance Advisor",
+  description: "Helps with money",
+  toolCount: 2,
+  isPublic: true,
+  createdAt: new Date()
+}   // ✅ matches the interface exactly
+
+const badAgent: Agent = {
+  id: 123,          // ❌ should be string, not number
+  name: "Research"  // ❌ missing description, toolCount, isPublic, createdAt
+}
+```
+
+**In React components**, interfaces define what props a component accepts:
+
+```typescript
+interface AgentCardProps {
+  name: string
+  description: string
+  toolCount: number
+}
+
+function AgentCard({ name, description, toolCount }: AgentCardProps) {
+  // TypeScript now guarantees name is a string, toolCount is a number
+}
+```
+
+**Design analogy:** A Figma component with defined properties. If you create a Button component with a required `label` property, every instance must have a label — Figma won't let you leave it empty. TypeScript's interface does the same thing in code.
+
+---
+
+#### Types on function parameters — Preventing wrong inputs
+
+When you add a type to a function parameter, TypeScript checks every call to that function:
+
+```typescript
+// No types — anything goes, bugs hide silently
+function createAgent(name, maxMessages) {
+  return { name, maxMessages }
+}
+createAgent(100, "Finance Advisor")  // swapped accidentally — runs fine, wrong data
+
+// With types — mistakes caught immediately
+function createAgent(name: string, maxMessages: number) {
+  return { name, maxMessages }
+}
+createAgent(100, "Finance Advisor")  // ❌ red underline on both — wrong types
+createAgent("Finance Advisor", 100)  // ✅ correct
+```
+
+**Common types you'll see in AgentForge:**
+
+| Type | Means | Example |
+|------|-------|---------|
+| `string` | Text | `"Finance Advisor"` |
+| `number` | Any number | `42`, `3.14` |
+| `boolean` | True or false | `true`, `false` |
+| `string[]` | Array of text | `["calculator", "search"]` |
+| `number[]` | Array of numbers | `[1, 2, 3]` |
+| `void` | Function returns nothing | Used on event handlers |
+| `Promise<Agent>` | Async function that returns an Agent | Used on database calls |
+
+---
+
+#### Required vs Optional props (`?`)
+
+By default, every prop in a TypeScript interface is required. Add `?` to make it optional.
+
+```typescript
+interface AgentCardProps {
+  name: string          // required — must always be passed
+  description: string   // required — must always be passed
+  toolCount?: number    // optional — can be omitted, defaults to undefined
+  isPublic?: boolean    // optional — can be omitted
+}
+```
+
+With optional props, you should always provide a default value so the component works even when the prop isn't passed:
+
+```typescript
+function AgentCard({
+  name,
+  description,
+  toolCount = 0,       // if toolCount isn't passed, use 0
+  isPublic = false     // if isPublic isn't passed, use false
+}: AgentCardProps) {
+  ...
+}
+```
+
+**When to make a prop optional:**
+- The component can display meaningfully without it
+- You have a sensible default
+- It's extra information (like a subtitle, badge, or count)
+
+**When to keep it required:**
+- The component can't render without it (like `name` on AgentCard)
+- There's no sensible default value
+
+---
+
+### React Concepts
+
+#### Props — Read-only data passed into a component
+
+Props are how a parent component sends data to a child component. They flow one way: from parent → child. The child can read them but never change them.
+
+```tsx
+// Parent — passes props to AgentCard
+function Dashboard() {
+  return (
+    <AgentCard
+      name="Finance Advisor"
+      description="Helps with budgeting"
+      toolCount={3}
+    />
+  )
+}
+
+// Child — receives and uses props
+function AgentCard({ name, description, toolCount }: AgentCardProps) {
+  return (
+    <div>
+      <h2>{name}</h2>
+      <p>{description}</p>
+      <span>{toolCount} tools</span>
+    </div>
+  )
+}
+```
+
+**Props can be anything:** strings, numbers, booleans, arrays, objects, even functions (called callback props or event handlers).
+
+**Design analogy:** Overriding a Figma component's text or colour at the instance level. The component defines the structure; props supply the specific values for each instance.
+
+---
+
+#### `useState` — Data that changes and triggers a re-render
+
+`useState` creates a piece of data inside a component that, when changed, causes the component to re-render with the new value.
+
+```typescript
+const [count, setCount] = useState(0)
+//     ↑            ↑             ↑
+//   current    update function  initial value
+//   value
+```
+
+Three rules:
+1. **Never change the value directly** — `count = count + 1` does nothing visible. Always use the setter: `setCount(count + 1)`
+2. **Every state change triggers a re-render** — React re-runs the component function with the new value and updates the DOM
+3. **Initial value only runs once** — `useState(0)` sets count to 0 on the first render only
+
+**Multiple state values in one component:**
+
+```typescript
+function AgentBuilder() {
+  const [agentName, setAgentName] = useState("")
+  const [tools, setTools] = useState<string[]>([])
+  const [isPublic, setIsPublic] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  // each one is independent — changing one doesn't affect others
+}
+```
+
+**Design analogy:** A prototype interaction in Figma where clicking a button changes the component's variant. `useState` is the current variant. `setCount` is the interaction that triggers the change. React re-renders the screen like Figma switching variants.
+
+---
+
+#### `.map()` for rendering lists in JSX
+
+`.map()` transforms each item in an array into a JSX element. This is how every list in React is rendered — dashboard cards, message history, tool toggles, search results.
+
+```tsx
+const agents = [
+  { id: "1", name: "Finance Advisor" },
+  { id: "2", name: "Research Bot" },
+  { id: "3", name: "Daily Briefer" }
+]
+
+// .map() turns the array of objects into an array of JSX elements
+return (
+  <div>
+    {agents.map((agent) => (
+      <AgentCard key={agent.id} name={agent.name} />
+    ))}
+  </div>
+)
+```
+
+**What happens:** React calls the function inside `.map()` once for each item in the array. Each call returns a JSX element. The result is an array of elements that React renders on screen.
+
+**In AgentForge:** Every screen that lists agents, messages, tools, or search results uses `.map()`. The data comes from Supabase; `.map()` turns it into cards.
+
+---
+
+#### The `key` prop — Helping React track list items
+
+When you render a list with `.map()`, React needs a way to tell items apart — especially when you add, remove, or reorder them. The `key` prop provides that identity.
+
+```tsx
+// Without key — React warns, and deletions/reorders can look wrong
+agents.map((agent) => <AgentCard name={agent.name} />)
+
+// With key — React tracks each item correctly
+agents.map((agent) => <AgentCard key={agent.id} name={agent.name} />)
+```
+
+**Rules for keys:**
+- Must be unique within the list (not globally — just within this `.map()`)
+- Should be stable — don't use the array index (`key={i}`) if items can be deleted or reordered, because the indexes shift and React gets confused
+- Database IDs (`agent.id`) are always the best keys — they're unique and stable
+
+---
+
+#### JSX Rules — The three things that trip everyone up
+
+JSX looks like HTML but it's JavaScript. Three differences always catch beginners:
+
+**1. `className` instead of `class`**
+`class` is a reserved word in JavaScript (it's used for object-oriented classes). So JSX uses `className` for CSS classes:
+
+```tsx
+// HTML
+<div class="bg-gray-900 rounded-lg">
+
+// JSX — must use className
+<div className="bg-gray-900 rounded-lg">
+```
+
+**2. Curly braces `{}` insert JavaScript**
+Anything inside `{}` is evaluated as JavaScript — variables, expressions, function calls:
+
+```tsx
+const name = "Finance Advisor"
+const count = 5
+
+<h2>{name}</h2>                          // → Finance Advisor
+<span>{count} tools</span>               // → 5 tools
+<p>{isPublic ? "Public" : "Private"}</p> // → Public or Private
+<button onClick={() => setCount(count + 1)}>Add</button>
+```
+
+Without `{}`, everything is treated as plain text. `<h2>name</h2>` would literally print the word "name".
+
+**3. Every element must close**
+In HTML, some tags are self-closing by convention: `<input>`, `<img>`, `<br>`. In JSX, every element must explicitly close — either with a closing tag or a self-closing slash:
+
+```tsx
+// HTML — this works
+<input type="text">
+<img src="logo.png">
+
+// JSX — must close everything
+<input type="text" />
+<img src="logo.png" />
+
+// Multi-line elements still need a closing tag
+<div className="card">
+  <h2>Title</h2>
+</div>
+```
+
+---
+
 ### Step 22: Week 2 Review (6:30pm)
 
 Fill these in before closing your laptop:
