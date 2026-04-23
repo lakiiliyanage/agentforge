@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react" /*test comment# test comment 2*/
+import { useState } from "react" 
 
 export default function MessageCounter() {
   const [count, setCount] = useState(10)
