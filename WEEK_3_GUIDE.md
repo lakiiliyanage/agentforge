@@ -116,19 +116,41 @@ Examples of good commits:
 
 You'll thank yourself in Week 9 when you're writing your GitHub README and can read a clear commit history.
 
-### Task 3 — Practice the Full Loop
+### Task 3 — Fix New Branch Pushes Once and For All (do this first)
 
-Make a tiny change — add a comment to any file — then run the full loop:
+Before running the practice loop, run this one-time setup command:
+
+```bash
+git config --global push.autoSetupRemote true
+```
+
+This tells Git: *"whenever I push a new branch for the first time, automatically link it to GitHub — no flags needed."*
+
+From now on, `git push` on any new branch just works. No more `fatal: The current branch has no upstream branch` errors. You'll never need to type `git push -u origin branch-name` manually again.
+
+Verify it saved:
+```bash
+git config --global push.autoSetupRemote
+# should print: true
+```
+
+> **Why this isn't the default:** Git is conservative by design — it won't push to a remote unless you've explicitly told it where. The `push.autoSetupRemote` flag changes that behaviour permanently for your machine. It's safe and almost universally recommended for solo developers.
+
+---
+
+### Task 3b — Practice the Full Loop
+
+Now make a tiny change — add a comment to any file — then run the full loop:
 
 ```bash
 git status        # should show the modified file
-git diff          # should show the exact line you changed
-git add .         # stage it
+git diff          # press q to exit the diff viewer
+git add src/components/practice/MessageCounter.tsx   # stage only what you changed
 git commit -m "docs: practice commit from week 3"
-git push          # might need: git push -u origin feature/week3-scaffold
+git push          # works automatically now — no -u flag needed
 ```
 
-The first push on a new branch requires the `-u` flag to set the upstream. Git will tell you the exact command if you forget — just copy and run what it suggests.
+> **Stage specific files, not `git add .`** — `git add .` stages everything changed, including files you didn't intend to touch. Get into the habit of staging by filename. When you're certain every changed file belongs in the same commit, `git add .` is fine — but always run `git status` first so there are no surprises.
 
 ### Task 4 — Merge It Back to Main
 
@@ -136,12 +158,15 @@ The first push on a new branch requires the `-u` flag to set the upstream. Git w
 git checkout main                    # switch back to main
 git merge feature/week3-scaffold     # bring the branch changes in
 git push                             # push main to GitHub
+git branch -d feature/week3-scaffold # clean up the branch
 ```
 
-Then delete the branch (good housekeeping):
+Check your history after:
 ```bash
-git branch -d feature/week3-scaffold
+git log --oneline
 ```
+
+You'll see every commit in a single clean line each. This is what contributors will see when they evaluate your repo in Week 9 — a readable history is a sign of a professional project.
 
 > **Pull Requests (PRs):** On GitHub, instead of merging locally like above, teams often use Pull Requests — you push your branch to GitHub, then open a PR in the browser where teammates can review it before it merges. This is how open-source collaboration works, and it's what you'll use when AgentForge has contributors in Week 9.
 
@@ -187,8 +212,12 @@ This file wraps every page in your app. Whatever you put here — your Navbar, y
 **`public/` — Static assets**
 Images, SVGs, fonts that don't need processing go here. Reference them as `/logo.svg` not with a relative path.
 
-**`tailwind.config.ts` — Tailwind customisation**
-This is where you'll add your brand colours, custom fonts, and spacing scales in later weeks. Leave it alone for now.
+**`globals.css` — Tailwind customisation (Tailwind v4)**
+In older tutorials you'll see a `tailwind.config.ts` file — Tailwind v3 required one to tell it where your files were. Tailwind v4 (which Next.js 15 uses) removes it entirely. Configuration now lives in `src/app/globals.css`. Open it and you'll see:
+```css
+@import "tailwindcss";
+```
+That single line replaces the entire config file. When you need to add custom brand colours or fonts in later weeks, you add them here — not in a separate config file. So if you can't find `tailwind.config.ts`, that's correct — it doesn't exist in your project.
 
 **`.gitignore` — Files Git ignores**
 `node_modules/`, `.env.local`, and build files are listed here. Never manually delete from `.gitignore`.
@@ -271,17 +300,19 @@ Open `localhost:3000` and navigate between pages — the navbar and footer shoul
 
 Environment variables are how you keep secrets out of your code. API keys, database URLs, payment keys — none of these ever go in your actual code files. They go in a special file called `.env.local` that Git ignores.
 
-Create the file:
+**Step 1 — Create the file:**
 
 ```bash
 touch .env.local
 ```
 
-Ask Claude Code:
+**Step 2 — Open it in VS Code:**
 
-> *"Explain to me: what is `.env.local` for in Next.js, what is the difference between `NEXT_PUBLIC_` prefixed variables and regular ones, and what happens if I accidentally push API keys to GitHub? Show me an example `.env.local` for AgentForge with placeholder values for the variables we'll need: Supabase URL, Supabase anon key, Anthropic API key, and Stripe secret key."*
+```bash
+code .env.local
+```
 
-Your `.env.local` should look something like this when set up:
+**Step 3 — Paste in these placeholder values and save (`Cmd + S`):**
 
 ```
 # Supabase (Week 4)
@@ -296,24 +327,63 @@ STRIPE_SECRET_KEY=your_stripe_secret_here
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_here
 ```
 
-Confirm `.env.local` is in your `.gitignore` file — it should be there by default in Next.js projects. If it's not, add it manually.
+These are placeholders — you'll replace them with real values when you set up each service (Supabase in Week 4, Anthropic in Week 6, Stripe in Week 10). Having the keys named and ready now means you won't have to hunt for the right variable name later.
 
-> **The rule:** if it's a secret → no `NEXT_PUBLIC_` prefix, never commit it. If it's a public config (like a Supabase URL or a Stripe publishable key) → `NEXT_PUBLIC_` prefix is fine.
+**Step 4 — Confirm it's gitignored:**
+
+Open `.gitignore` in VS Code and look for `.env.local` in the list. It should be there by default in every Next.js project. If it's not, add it manually on its own line.
+
+**Step 5 — Ask Claude Code to explain what you just set up:**
+
+> *"Explain what `.env.local` is for in Next.js, what is the difference between `NEXT_PUBLIC_` prefixed variables and regular ones, and what would happen if I accidentally pushed API keys to GitHub? Use my AgentForge setup as the example."*
+
+> **The rule:** secret → no `NEXT_PUBLIC_` prefix, never commit it. Public config (like a Supabase URL or Stripe publishable key) → `NEXT_PUBLIC_` prefix is fine. When in doubt, leave the prefix off — it's always safer for a value to be server-only.
 
 ### Task 15 — Next.js App Router: The Four Special Files
 
-Ask Claude Code:
+Ask Claude Code to explain all four — but you'll only **build** `loading.tsx` this week:
 
 > *"Explain the difference between `layout.tsx`, `page.tsx`, `loading.tsx`, and `error.tsx` in the Next.js App Router. Show me a simple example of each one and explain when Next.js uses each file."*
 
-Then do this practically:
+**What each file does and when you build it:**
 
-1. Create `src/app/dashboard/loading.tsx` — ask Claude Code for a spinner or skeleton placeholder:
-   > *"Create a `loading.tsx` for the dashboard page — a full-page centred loading spinner using Tailwind's animate-spin class"*
+| File | What it does | When you build it |
+|------|-------------|------------------|
+| `layout.tsx` | Wraps every page — Navbar and Footer live here | Done — already wired up in Task 13 |
+| `page.tsx` | The actual page content at a given URL | Done — every route has one |
+| `loading.tsx` | Shown automatically while a page is loading | **Today — Task 15** |
+| `error.tsx` | Shown if a page crashes — catches errors gracefully | Week 11 — custom error pages |
 
-2. Navigate to `localhost:3000/dashboard` — you'll see the loading state briefly (even though there's nothing to load yet — it shows while the page component is rendering server-side).
+**Now build `loading.tsx` only:**
+
+1. Ask Claude Code:
+   > *"Create a `loading.tsx` for the dashboard page at `src/app/dashboard/loading.tsx` — a full-page centred loading spinner using Tailwind's `animate-spin` class"*
+
+2. Navigate to `localhost:3000/dashboard` — you'll see the spinner briefly as the page renders.
 
 3. Ask Claude Code: *"What is the purpose of having a `loading.tsx` separate from the page? How does this improve perceived performance for users?"*
+
+> **Don't create `error.tsx` yet.** It's worth knowing it exists, but building it properly (with AgentForge branding and a retry button) is a Week 11 task.
+
+---
+
+### Task 16 — Commit Everything from Today
+
+Before stretch tasks, commit all the work from Hour 7:
+
+```bash
+git add .
+git commit -m "feat: env variables setup and dashboard loading state"
+git push
+```
+
+Then check your full history:
+
+```bash
+git log --oneline
+```
+
+You should see a clean record of today's work — scaffold, landing page, navbar, footer, env setup, loading state. That's a solid Week 3.
 
 ---
 
