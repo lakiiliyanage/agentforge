@@ -331,7 +331,21 @@ These are placeholders — you'll replace them with real values when you set up 
 
 **Step 4 — Confirm it's gitignored:**
 
-Open `.gitignore` in VS Code and look for `.env.local` in the list. It should be there by default in every Next.js project. If it's not, add it manually on its own line.
+Open `.gitignore` in VS Code (or run `cat .gitignore` in terminal). Look for this line:
+
+```
+.env*
+```
+
+You won't see `.env.local` listed explicitly — Next.js uses the wildcard `.env*` instead, which covers `.env.local`, `.env.development`, `.env.production`, and any other `.env` file you ever create. This is broader and better than listing each file individually.
+
+Confirm it's working by running `git status` — `.env.local` should **not** appear in the list of tracked or changed files. If it does appear, add `.env.local` manually to `.gitignore` on its own line and run:
+
+```bash
+git rm --cached .env.local
+```
+
+That removes it from Git's tracking without deleting the file from your computer.
 
 **Step 5 — Ask Claude Code to explain what you just set up:**
 
@@ -396,12 +410,12 @@ Run through this sequence **twice** without looking at notes:
 ```bash
 # Round 1: Create → Edit → Commit → Push → Merge
 git checkout -b feature/test-run-one
-# Make any tiny edit to page.tsx
+# Make any tiny edit to any file
 git status
-git diff
+git diff          # press q to exit
 git add .
 git commit -m "test: muscle memory drill one"
-git push -u origin feature/test-run-one
+git push          # no -u flag needed — autoSetupRemote handles it
 git checkout main
 git merge feature/test-run-one
 git branch -d feature/test-run-one
@@ -423,7 +437,30 @@ Ask Claude Code:
 
 > *"Build a reusable `Button` component at `src/components/ui/Button.tsx`. It should support: a `variant` prop with values 'primary', 'secondary', and 'ghost', a `size` prop with values 'sm', 'md', 'lg', an optional `href` prop that renders an anchor tag instead of a button, and a `disabled` prop. Use Tailwind for all styles. Show all variants in a demo."*
 
-Then replace the hardcoded buttons on your landing page with this `Button` component. Notice how much cleaner the code becomes when you use a reusable component — this is the practical payoff of the Week 2 props/state mental model.
+**Then replace the hardcoded buttons on your landing page:**
+
+1. Add this import at the top of `src/app/page.tsx` (if not already there):
+   ```tsx
+   import Button from "@/components/ui/Button"
+   ```
+
+2. Find the CTA buttons section (the `{/* CTA buttons */}` comment) and delete the two hardcoded elements inside the wrapper div — the `<Link>` and the `<a>` tag with all their Tailwind classes.
+
+3. Replace them with:
+   ```tsx
+   <Button variant="primary" size="lg" href="/auth/signup">
+     Get Started Free
+   </Button>
+   <Button variant="secondary" size="lg" href="#">
+     View on GitHub
+   </Button>
+   ```
+
+4. Keep the wrapping `<div className="flex flex-col sm:flex-row items-center justify-center gap-3">` — it controls the layout between buttons, not the button styles themselves.
+
+5. Remove `import Link from "next/link"` from the top of the file since you're no longer using `<Link>` directly.
+
+Notice how much cleaner the code is — 30+ Tailwind classes replaced with two clear prop-driven lines. Change button styles across the whole app by editing `Button.tsx` once. This is the practical payoff of the Week 2 props/state mental model.
 
 ### Responsive Check (30 min)
 
@@ -468,8 +505,10 @@ For now, everything you build in Weeks 6–12 uses Claude API. It's the most cap
 
 ## Resources for This Week
 
+> **These are reference docs — not things to install.** Your environment is already set up. Use these links when you hit something you don't understand while building, not as step-by-step guides to follow.
+
 - **Git visual explainer** (best one on the internet): https://learngitbranching.js.org — spend 20 minutes here, it will solidify everything
-- **Next.js App Router docs**: https://nextjs.org/docs/app — specifically the "Routing Fundamentals" page
+- **Next.js App Router docs**: https://nextjs.org/docs/app — specifically the "Routing Fundamentals" page. Not the installation guide — you're already installed.
 - **Tailwind responsive design**: https://tailwindcss.com/docs/responsive-design
 - **Environment variables in Next.js**: https://nextjs.org/docs/app/building-your-application/configuring/environment-variables
 
