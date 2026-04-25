@@ -357,7 +357,7 @@ agentforge/
 ```bash
 cat package.json | grep next
 ```
-You'll see `"next": "15.x.x"` — that's your version. ✅
+You'll see `"next": "16.x.x"` — that's your version. ✅
 
 **Run the development server:**
 ```bash
@@ -415,7 +415,7 @@ Run each command — if it returns the expected output, the step is truly comple
 | VS Code | `code --version` | Version number |
 | Claude Code | `claude --version` | Version number |
 | GitHub | `gh auth status` | Logged in to github.com |
-| Next.js version | `cat package.json \| grep next` | `"next": "15.x.x"` |
+| Next.js version | `cat package.json \| grep next` | `"next": "16.x.x"` |
 | Dev server | `npm run dev` → open localhost:3000 | Next.js welcome page loads |
 | GitHub repo | Visit github.com/lakiiliyanage/agentforge | Your files visible online |
 

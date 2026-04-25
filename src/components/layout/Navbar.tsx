@@ -1,15 +1,39 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { createClient } from "@/lib/supabase/client"
 
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Dashboard", href: "/dashboard" },
 ]
 
-export default function Navbar() {
+export default function Navbar({ initialLoggedIn = false }: { initialLoggedIn?: boolean }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const [isLoggedIn, setIsLoggedIn] = useState(initialLoggedIn)
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [pathname])
+
+  async function handleSignOut() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push("/auth/login")
+  }
 
   return (
     // sticky top-0 z-50   — stays pinned to the top of the viewport as you scroll
@@ -71,13 +95,22 @@ export default function Navbar() {
             GitHub
           </a>
 
-          {/* ── Get Started CTA ── */}
-          <Link
-            href="/auth/signup"
-            className="text-sm bg-violet-600 hover:bg-violet-500 active:scale-95 text-white font-medium px-4 py-2 rounded-lg transition-all"
-          >
-            Get Started
-          </Link>
+          {/* ── Auth CTA — sign out when logged in, sign up when logged out ── */}
+          {isLoggedIn ? (
+            <button
+              onClick={handleSignOut}
+              className="text-sm bg-gray-800 hover:bg-gray-700 active:scale-95 text-gray-300 hover:text-white font-medium px-4 py-2 rounded-lg transition-all"
+            >
+              Sign Out
+            </button>
+          ) : (
+            <Link
+              href="/auth/signup"
+              className="text-sm bg-violet-600 hover:bg-violet-500 active:scale-95 text-white font-medium px-4 py-2 rounded-lg transition-all"
+            >
+              Get Started
+            </Link>
+          )}
 
         </div>
       </div>

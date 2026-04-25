@@ -110,7 +110,7 @@ docs:     documentation
 
 Examples of good commits:
 - `feat: add AgentForge landing page hero section`
-- `chore: scaffold Next.js 14 project with TypeScript`
+- `chore: scaffold Next.js 16 project with TypeScript`
 - `fix: correct navbar link to dashboard page`
 - `style: apply dark theme to auth pages`
 
@@ -186,7 +186,7 @@ claude
 
 Then give it this prompt — copy it exactly:
 
-> *"Create a new Next.js 14 project in this folder with TypeScript, Tailwind CSS, and the App Router enabled. Set up the folder structure for a SaaS app with the following routes: a landing page at `/`, a dashboard at `/dashboard`, an auth section at `/auth/login` and `/auth/signup`, and an agents section at `/agents/new` and `/agents/[id]`. Create placeholder page.tsx files for each. Add a `src/components/` folder with `ui/` and `layout/` subdirectories. Include a README.md with a brief description of the project."*
+> *"Create a new Next.js 16 project in this folder with TypeScript, Tailwind CSS v4, and the App Router enabled. Set up the folder structure for a SaaS app with the following routes: a landing page at `/`, a dashboard at `/dashboard`, an auth section at `/auth/login` and `/auth/signup`, and an agents section at `/agents/new` and `/agents/[id]`. Create placeholder page.tsx files for each. Add a `src/components/` folder with `ui/` and `layout/` subdirectories. Include a README.md with a brief description of the project."*
 
 Claude Code will generate a significant amount of file structure. Let it run completely before you touch anything.
 
@@ -213,7 +213,7 @@ This file wraps every page in your app. Whatever you put here — your Navbar, y
 Images, SVGs, fonts that don't need processing go here. Reference them as `/logo.svg` not with a relative path.
 
 **`globals.css` — Tailwind customisation (Tailwind v4)**
-In older tutorials you'll see a `tailwind.config.ts` file — Tailwind v3 required one to tell it where your files were. Tailwind v4 (which Next.js 15 uses) removes it entirely. Configuration now lives in `src/app/globals.css`. Open it and you'll see:
+In older tutorials you'll see a `tailwind.config.ts` file — Tailwind v3 required one to tell it where your files were. Tailwind v4 (which your Next.js 16 project uses) removes it entirely. Configuration now lives in `src/app/globals.css`. Open it and you'll see:
 ```css
 @import "tailwindcss";
 ```
@@ -226,7 +226,7 @@ That single line replaces the entire config file. When you need to add custom br
 
 ```bash
 git add .
-git commit -m "chore: scaffold Next.js 14 project for AgentForge"
+git commit -m "chore: scaffold Next.js 16 project for AgentForge"
 git push
 ```
 

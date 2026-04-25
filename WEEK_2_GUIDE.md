@@ -245,7 +245,7 @@ Before you build the To-Do app, it's worth knowing what each special filename me
 | `error.tsx` | **Error boundary** — shown if a page crashes. Catches errors so one broken page doesn't kill the whole app. | Week 11 — custom error page |
 | `not-found.tsx` | **404 page** — shown when a URL doesn't match any route. | Week 11 — custom not-found page |
 | `route.ts` | **API endpoint** — server-side code with no UI. Returns JSON. This is how your app talks to Supabase and Claude API. | `/api/chat/route.ts`, `/api/stripe/webhook/route.ts` |
-| `middleware.ts` | **Request interceptor** — runs before any page loads. Used for auth redirects: "is this user logged in? If not, send them to /login." | Week 4 — protecting the dashboard |
+| `proxy.ts` | **Request interceptor** — runs before any page loads. Used for auth redirects: "is this user logged in? If not, send them to /login." In Next.js 16 this file is called `proxy.ts` (older tutorials may call it `middleware.ts`). | Week 4 — protecting the dashboard |
 
 ### How Folders Become URLs
 
@@ -339,7 +339,7 @@ This is the most important exercise of Week 2. You're not just watching Claude b
 In Claude Code:
 
 ```
-I'm building AgentForge with Next.js 14 App Router + TypeScript + Tailwind CSS.
+I'm building AgentForge with Next.js 16 App Router + TypeScript + Tailwind CSS v4.
 
 Build a To-Do list app at src/app/todo/page.tsx. Requirements:
 - Add new tasks via a text input + button
@@ -1378,7 +1378,7 @@ AgentForge landing page. I need:
   two buttons (Get Started + View on GitHub)
 - Features: 3 cards (Visual Builder, Tool Integrations, Shareable Links)
 - Dark theme, clean modern design
-Use Next.js 14 App Router, TypeScript, Tailwind CSS.
+Use Next.js 16 App Router, TypeScript, Tailwind CSS v4.
 Explain every component and Tailwind class you use.
 ```
 
