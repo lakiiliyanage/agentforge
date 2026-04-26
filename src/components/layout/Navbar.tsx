@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 
@@ -12,27 +12,24 @@ const navLinks = [
 
 export default function Navbar({ initialLoggedIn = false }: { initialLoggedIn?: boolean }) {
   const pathname = usePathname()
-  const router = useRouter()
   const [isLoggedIn, setIsLoggedIn] = useState(initialLoggedIn)
 
   useEffect(() => {
     const supabase = createClient()
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsLoggedIn(!!session)
-    })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session)
     })
 
     return () => subscription.unsubscribe()
-  }, [pathname])
+  }, [])
 
   async function handleSignOut() {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push("/auth/login")
+    // Hard navigation so layout.tsx re-runs on the server and renders
+    // "Get Started" from the first paint, with no stale session state.
+    window.location.href = '/auth/login'
   }
 
   return (

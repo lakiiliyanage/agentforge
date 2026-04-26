@@ -752,17 +752,68 @@ Row Level Security (RLS) fixes this by attaching rules to the table itself: "thi
 
 ### Task 12 — Enable Row Level Security on the `agents` Table
 
-In Supabase, go to **Table Editor → agents → RLS**.
+> **Note:** Supabase's UI has been updated. There is no separate "Enable RLS" toggle visible in the toolbar — RLS is enabled automatically when you save your first policy. The steps below reflect the current interface.
 
-Click **Enable RLS**. RLS is now on — but this means **zero access by default**. You need to create explicit policies to allow your app to work.
+In Supabase, open the **Table Editor** and click on the `agents` table. In the toolbar at the top, click **Add RLS policy**.
 
-Ask Claude Code:
+This opens the **"Create a new Row Level Security policy"** screen. You'll see:
 
-> *"Write SQL to create four Row Level Security policies on the `agents` table in Supabase: (1) SELECT — users can only read their own agents, (2) INSERT — users can only insert rows where the user_id matches their own auth.uid(), (3) UPDATE — users can only update their own agents, (4) DELETE — users can only delete their own agents. Also write a fifth policy that allows public SELECT on rows where is_public = true — this will be used for the shareable agent links in Week 9."*
+- **Policy Name** — give the policy a clear, readable name
+- **Table on clause** — already set to `public.agents`
+- **Policy Behavior** — leave as `Permissive`
+- **Policy Command** — choose SELECT, INSERT, UPDATE, DELETE, or ALL
+- **Target Roles** — leave as default (all public roles)
+- **SQL editor** — where you enter the expression that controls access
+- **Templates panel** on the right — pre-built shortcuts you can click to auto-fill the form
 
-Copy each policy into **Table Editor → agents → RLS → Add Policy → For full customization** and run it.
+You need to create **five policies**. For each one, click **Add RLS policy**, fill in the details below, then click **Save policy**.
 
-After adding all five policies, verify with:
+---
+
+**Policy 1 — Users can read their own agents (SELECT)**
+- Policy Name: `Users can view own agents`
+- Policy Command: `SELECT`
+- In the SQL editor, on the line that says `-- Provide a SQL expression for the using statement`, replace it with: `auth.uid() = user_id`
+- Shortcut: click the **"Enable read access for all users"** template on the right, then edit line 7 to `auth.uid() = user_id`
+
+---
+
+**Policy 2 — Users can insert their own agents (INSERT)**
+- Policy Name: `Users can insert own agents`
+- Policy Command: `INSERT`
+- In the SQL editor, replace the placeholder expression with: `auth.uid() = user_id`
+- Shortcut: click the **"Enable insert for users based on user_id"** template on the right — it pre-fills the correct expression
+
+---
+
+**Policy 3 — Users can update their own agents (UPDATE)**
+- Policy Name: `Users can update own agents`
+- Policy Command: `UPDATE`
+- The UPDATE policy has **two expression fields** — this is normal:
+  - `using` (line 7) — controls which rows can be targeted: `auth.uid() = user_id`
+  - `with check` (line 9) — validates the row after the update: `auth.uid() = user_id`
+- Both get the same expression. The `using` clause says "you can only update rows you own", and `with check` says "after updating, the row must still belong to you" — this prevents someone changing a row's `user_id` to hijack another user's data.
+
+---
+
+**Policy 4 — Users can delete their own agents (DELETE)**
+- Policy Name: `Users can delete own agents`
+- Policy Command: `DELETE`
+- Expression: `auth.uid() = user_id`
+- Shortcut: click the **"Enable delete for users based on user_id"** template on the right
+
+---
+
+**Policy 5 — Public can view shared agents (SELECT)**
+- Policy Name: `Public can view shared agents`
+- Policy Command: `SELECT`
+- Expression: `is_public = true`
+
+> This fifth policy is for Week 9 when you add shareable agent links. Add it now so the architecture is ready.
+
+---
+
+After saving all five policies, verify in the **SQL Editor**:
 
 ```sql
 SELECT * FROM pg_policies WHERE tablename = 'agents';
@@ -786,9 +837,9 @@ This test is critical. Do not skip it.
 4. In the Supabase SQL Editor: temporarily look at the `agents` table — the second user's RLS context means they cannot see your rows
 
 **Test 3: What happens without RLS (educational — then re-enable immediately)**
-1. Go to **Table Editor → agents → RLS** and click **Disable RLS**
-2. Check the table — you can see all rows regardless of user
-3. Immediately **re-enable RLS**
+1. In the SQL Editor, run: `ALTER TABLE agents DISABLE ROW LEVEL SECURITY;`
+2. Query the table — you can now see all rows regardless of which user you are
+3. Immediately re-enable it: `ALTER TABLE agents ENABLE ROW LEVEL SECURITY;`
 
 Ask Claude Code:
 
