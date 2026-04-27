@@ -1,6 +1,24 @@
 @AGENTS.md
-@WEEK_1_GUIDE.md
-@WEEK_2_GUIDE.md
+
+# AgentForge — Project Memory
+
+## Completed Work
+- Week 1: Project environment set up — VS Code, Node, Claude Code CLI, Supabase auth configured and first commit pushed to GitHub.
+- Week 2: JavaScript/TypeScript fundamentals covered; built a To-Do app, three React components (AgentCard, MessageCounter, AgentList), and practised Tailwind CSS styling.
+- Week 3: Next.js scaffold built with real landing page, Navbar/Footer components, App Router structure understood, and git branching workflow established.
+- Week 4: Connected AgentForge to a live Supabase backend with real auth (signup, login, signout, session management via `proxy.ts` and Server Actions), the `agents` table with five RLS policies, and a `messages` table with INSERT/SELECT policies. The profile page displays the user's email, formatted join date (`Intl.DateTimeFormat`), and live agent count fetched server-side.
+
+## Current Focus (Week 5)
+Connecting the UI to the database — building the Create Agent form, displaying real agents on the dashboard with server-side fetching, and understanding the difference between Server and Client Components.
+
+## Memory Rules (Claude must always follow these)
+- If any @-imported file exceeds 40k characters, flag it and suggest archiving it
+- Keep this CLAUDE.md file under 8,000 characters total
+- At the start of a session where a new sprint has begun, remind me to run /sprint-close
+- Completed Work summaries must be max 2 sentences per week
+- Never @-import week guides older than the current sprint
+
+---
 
 # AgentForge — Project Stack & Version Reference
 
@@ -58,10 +76,16 @@ const supabase = createServerClient(URL, KEY, { cookies: { ... } })
 
 ## Environment Variables
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://gqqglsttnfkftsdcbcsz.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...
 SUPABASE_SERVICE_ROLE_KEY=sb_secret_...   ← server only, added in Week 10
 ```
+
+## Supabase Project — CRITICAL
+- AgentForge Supabase project ID: **gqqglsttnfkftsdcbcsz**
+- Before using ANY Supabase MCP tool, verify the project_id matches this ID
+- NEVER use a project_id from list_projects without first confirming it against .env.local
+- The Vampli project (zmmivcmdtttlbzqfdoyk) is a completely separate project — never touch it
 
 ## Claude Code Prompt Template
 
