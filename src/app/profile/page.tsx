@@ -18,11 +18,10 @@ export default async function ProfilePage() {
 
   const agentCount = countError ? 0 : (count ?? 0)
 
-  const joinedDate = new Date(user.created_at).toLocaleDateString('en-US', {
-    year: 'numeric',
+  const joinedDate = new Intl.DateTimeFormat('en-US', {
     month: 'long',
-    day: 'numeric',
-  })
+    year: 'numeric',
+  }).format(new Date(user.created_at))
 
   // First letter of email for the avatar circle
   const initial = user.email?.[0].toUpperCase() ?? '?'

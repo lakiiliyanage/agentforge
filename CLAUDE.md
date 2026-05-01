@@ -17,6 +17,8 @@ Connecting the UI to the database — building the Create Agent form, displaying
 - At the start of a session where a new sprint has begun, remind me to run /sprint-close
 - Completed Work summaries must be max 2 sentences per week
 - Never @-import week guides older than the current sprint
+- Every weekly guide must include git commit checkpoints after logical task groups (not after every single task — after a meaningful chunk of related work is complete). Use descriptive commit messages. After the final task of any week, always include a sprint close block: run /sprint-close, then commit with a summary message covering the whole week.
+- The plan is 13 weeks, not 12. Week 13 = Testing & Code Quality (Vitest, API route tests, CI integration). Week 6 Additional Tasks includes env validation with Zod. Do not treat Week 12 as the final week.
 
 ---
 
@@ -86,6 +88,26 @@ SUPABASE_SERVICE_ROLE_KEY=sb_secret_...   ← server only, added in Week 10
 - Before using ANY Supabase MCP tool, verify the project_id matches this ID
 - NEVER use a project_id from list_projects without first confirming it against .env.local
 - The Vampli project (zmmivcmdtttlbzqfdoyk) is a completely separate project — never touch it
+
+## Development Workflow — Large Features
+
+Use **OpenSpec** (`@fission-ai/openspec`) for any task that spans multiple files, pages, or requires a design decision before coding. Skip it for small fixes, single-file edits, or bug repairs.
+
+**When to use:** new pages, major refactors, new Supabase tables, multi-step features.
+**When to skip:** typo fixes, style tweaks, adding a single field, answering questions.
+
+If OpenSpec is not yet initialised in the project:
+```bash
+npm install -g @fission-ai/openspec@latest
+openspec init --tools claude
+```
+
+Core workflow:
+1. `/opsx:propose <feature-name>` — agree on spec and tasks before any code
+2. `/opsx:apply` — implement tasks from the approved spec
+3. `/opsx:archive` — clean up after the feature ships
+
+---
 
 ## Claude Code Prompt Template
 
